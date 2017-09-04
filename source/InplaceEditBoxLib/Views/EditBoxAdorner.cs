@@ -213,19 +213,22 @@ namespace InplaceEditBoxLib.Views
             // try to get the text box focused when layout finishes.
             mTextBox.LayoutUpdated += OnTextBoxLayoutUpdated;
         }
-
+         /// <summary>
+        ///    When you perform a Click outside the Control, this block of code will be fired.
+        /// </summary>
         private void HandleClickOutsideOfControl(object sender, MouseButtonEventArgs e)
         {
-            //oopsy whooopsy, Don't Panic ! I just noticed that the only way to trigger the 
-            //mouse events is to make them fire via built-in controls, such as buttons.
+            /*oopsy whooopsy, Don't Panic ! I just noticed that the only way to trigger the 
+            mouse events is to make them fire via built-in controls, such as buttons.*/
+           
+           	//Virtual Button that will be exploited to launch an imaginary "press" event, this control won't be rendered.            
             var b = new Button();
             b.Click += (o, args) =>
             {
                 mTextBox.Focusable = false;
-               
                 mTextBox.ReleaseMouseCapture();
             };
-
+			//This peer will be responsable for firing the "press"-like event          
             var peer =
                 new ButtonAutomationPeer(b);
             var invokeProv =
@@ -240,25 +243,28 @@ namespace InplaceEditBoxLib.Views
         /// </summary>
         private void OnTextBoxLayoutUpdated(object sender, EventArgs e)
         {
+        	//Enables <Focusable> again so you can implement the control again
             mTextBox.Focusable = true;
             if (mIsVisible)
                 if (mTextBox.IsFocused == false)
                 {
+                	//Virtual Button that will be exploited to launch an imaginary "press" event, this control won't be rendered.
                     var b = new Button();
                     b.Click += (o, args) =>
                     {
+                    	//This line of code captures the Mouse events
                         Mouse.Capture(mTextBox);
+                        //You know... a handler?
                         AddHandler(Mouse.PreviewMouseDownOutsideCapturedElementEvent,
                             new MouseButtonEventHandler(HandleClickOutsideOfControl), false);
                     };
-
+                    //This peer will be responsable for firing the "press"-like event
                     var peer =
                         new ButtonAutomationPeer(b);
                     var invokeProv =
                         peer.GetPattern(PatternInterface.Invoke)
                             as IInvokeProvider;
-                    invokeProv.Invoke();
-                   
+                    invokeProv.Invoke();	
                     mTextBox.Focusable = false;
                 }
         }
