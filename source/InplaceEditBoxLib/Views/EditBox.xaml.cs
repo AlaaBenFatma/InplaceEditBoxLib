@@ -671,7 +671,7 @@ namespace InplaceEditBoxLib.Views
         /// Sets IsEditing to false when the ViewItem that contains an EditBox changes its size
         /// </summary>
         /// <param name="bCancelEdit"></param>
-        private void OnSwitchToNormalMode(bool bCancelEdit = true)
+        public void OnSwitchToNormalMode(bool bCancelEdit = true)
         {
             lock (_lockObject)
             {
@@ -716,6 +716,7 @@ namespace InplaceEditBoxLib.Views
         /// </summary>
         private void OnSwitchToEditingMode()
         {
+            
             lock (_lockObject)
             {
                 if (IsReadOnly == false && IsEditing == false)

@@ -1,3 +1,7 @@
+using System.Windows.Automation.Peers;
+using System.Windows.Automation.Provider;
+using System.Windows.Input;
+
 namespace InplaceEditBoxLib.Views
 {
   using System;
@@ -211,20 +215,65 @@ namespace InplaceEditBoxLib.Views
       this.mTextBox.SetBinding(TextBox.TextProperty, binding);
 
       // try to get the text box focused when layout finishes.
-      this.mTextBox.LayoutUpdated += new EventHandler(this.OnTextBoxLayoutUpdated);
-    }
+      this.mTextBox.LayoutUpdated += this.OnTextBoxLayoutUpdated;
 
-    /// <summary>
-    /// When Layout finish, if in editable mode, update focus status on TextBox.
-    /// </summary>
-    private void OnTextBoxLayoutUpdated(object sender, EventArgs e)
-    {
-      if (this.mIsVisible == true)
+       
+        }
+
+      private void HandleClickOutsideOfControl(object sender, MouseButtonEventArgs e)
       {
-        if (this.mTextBox.IsFocused == false)
-          this.mTextBox.Focus();
-      }
+          Button b = new Button();
+          b.Click += (o, args) =>
+          {
+             mTextBox.Focusable = false;
+             // Visibility = Visibility.Collapsed;
+              //b.Focus();
+              mTextBox.ReleaseMouseCapture();
+          };
+
+          ButtonAutomationPeer peer =
+              new ButtonAutomationPeer(b);
+          IInvokeProvider invokeProv =
+              peer.GetPattern(PatternInterface.Invoke)
+                  as IInvokeProvider;
+          invokeProv.Invoke();
+          mTextBox.Focusable = true;
+
+        }
+
+      /// <summary>
+        /// When Layout finish, if in editable mode, update focus status on TextBox.
+        /// </summary>
+        private void OnTextBoxLayoutUpdated(object sender, EventArgs e)
+    {
+        mTextBox.Focusable = true;
+            if (this.mIsVisible == true)
+      {
+          if (this.mTextBox.IsFocused == false)
+          {
+            
+              Button b = new Button();
+              b.Click += (o, args) =>
+              {
+                  Mouse.Capture(mTextBox);
+                  AddHandler(Mouse.PreviewMouseDownOutsideCapturedElementEvent,
+                      new MouseButtonEventHandler(HandleClickOutsideOfControl), false);
+               
+              };
+                
+                    ButtonAutomationPeer peer =
+                  new ButtonAutomationPeer(b);
+              IInvokeProvider invokeProv =
+                  peer.GetPattern(PatternInterface.Invoke)
+                      as IInvokeProvider;
+              invokeProv.Invoke();
+                   // this.mTextBox.Focus();
+              mTextBox.Focusable = false;
+                }
+
+            }
+      
+        }
+        #endregion methods
     }
-    #endregion methods
-  }
 }
